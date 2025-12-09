@@ -29,6 +29,7 @@ app.use(express.urlencoded({ extended: true }));
 // app.use("/", router);
 
 app.get("/", (req, res) => {
+  console.log("Server is running...");
   res.send("🚀 Server is running successfully!");
 });
 
