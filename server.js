@@ -28,6 +28,10 @@ app.use(express.urlencoded({ extended: true }));
 // [ Routes ]
 // app.use("/", router);
 
+app.get("/", (req, res) => {
+  res.send("🚀 Server is running successfully!");
+});
+
 // ---------------------------------------------- [ server ]
 app.listen(process.env.PORT, () => {
   console.log(`server listening on ${process.env.PORT}`);
