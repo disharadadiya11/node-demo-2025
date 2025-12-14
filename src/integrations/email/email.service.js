@@ -1,5 +1,8 @@
 const emailTransporter = require("./email.client");
 const { APP_URL, FRONTEND_URL } = require("../../config/env");
+const welcomeTemplate = require("../../messages/templates/welcome.template");
+const resetPasswordTemplate = require("../../messages/templates/resetPassword.template");
+const baseTemplate = require("../../messages/templates/base.template");
 
 class EmailService {
   async sendEmail(to, subject, html, text) {
@@ -23,37 +26,29 @@ class EmailService {
 
   async sendWelcomeEmail(user) {
     const subject = "Welcome to Node 2025";
-    const html = `
-      <h1>Welcome ${user.name}!</h1>
-      <p>Thank you for registering with us.</p>
-      <p>We're excited to have you on board.</p>
-    `;
+    const html = welcomeTemplate({ name: user.name });
     return await this.sendEmail(user.email, subject, html);
   }
 
   async sendOrderConfirmationEmail(user, order) {
     const subject = `Order Confirmation - ${order.orderNumber}`;
-    const html = `
-      <h1>Order Confirmed</h1>
+    const title = "Order Confirmed";
+    const body = `
+      <h2>Order Confirmed</h2>
       <p>Hi ${user.name},</p>
-      <p>Your order ${order.orderNumber} has been confirmed.</p>
-      <p>Total Amount: ₹${order.total}</p>
-      <p>Thank you for your purchase!</p>
+      <p>Your order <strong>${order.orderNumber}</strong> has been confirmed.</p>
+      <p>Total Amount: <strong>₹${order.total}</strong></p>
+      <p>Thank you for your purchase! We'll keep you updated on your order status.</p>
+      <p>Best regards,<br>The Node 2025 Team</p>
     `;
+    const html = baseTemplate({ title, body });
     return await this.sendEmail(user.email, subject, html);
   }
 
   async sendPasswordResetEmail(user, resetToken) {
     const subject = "Password Reset Request";
     const resetUrl = `${FRONTEND_URL}/reset-password?token=${resetToken}`;
-    const html = `
-      <h1>Password Reset</h1>
-      <p>Hi ${user.name},</p>
-      <p>You requested a password reset. Click the link below to reset your password:</p>
-      <a href="${resetUrl}">Reset Password</a>
-      <p>This link will expire in 1 hour.</p>
-      <p>If you didn't request this, please ignore this email.</p>
-    `;
+    const html = resetPasswordTemplate({ name: user.name, resetLink: resetUrl });
     return await this.sendEmail(user.email, subject, html);
   }
 }

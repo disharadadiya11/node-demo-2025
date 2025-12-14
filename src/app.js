@@ -16,6 +16,14 @@ app.use(
     stream: { write: (message) => console.log(message.trim()) },
   })
 );
+
+// Raw body parser for Stripe webhooks (must be before JSON parser)
+app.use(
+  "/webhooks/stripe",
+  express.raw({ type: "application/json" })
+);
+
+// JSON and URL-encoded body parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

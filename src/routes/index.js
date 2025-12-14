@@ -1,25 +1,24 @@
 const express = require("express");
 const router = express.Router();
+const { routeDefinitions } = require("./route.registry");
+const { loadRoutes } = require("./route.loader");
 
-// Health check
+// Health check (kept as separate route file for backward compatibility)
 const healthRoutes = require("./health.routes");
 router.use("/", healthRoutes);
 
-// Module routes
-const userRoutes = require("../modules/users/user.routes");
-const categoryRoutes = require("../modules/categories/category.routes");
-const productRoutes = require("../modules/products/product.routes");
-const orderRoutes = require("../modules/orders/order.routes");
-const paymentRoutes = require("../modules/payments/payment.routes");
-
-// Webhook routes
+// Webhook routes (kept as separate route files - webhooks have special handling)
 const webhookRoutes = require("../webhooks/razorpay/razorpay.routes");
+const { handleStripeWebhook } = require("../webhooks/stripe.webhook");
 
-router.use("/api/users", userRoutes);
-router.use("/api/categories", categoryRoutes);
-router.use("/api/products", productRoutes);
-router.use("/api/orders", orderRoutes);
-router.use("/api/payments", paymentRoutes);
+// Stripe webhook (raw body is parsed in app.js middleware)
+router.post("/webhooks/stripe", handleStripeWebhook);
+
+// Razorpay webhook routes
 router.use("/webhooks", webhookRoutes);
+
+// Load all routes from registry (centralized route system)
+// All module routes (users, categories, products, orders, payments) are defined in route.registry.js
+loadRoutes(router, routeDefinitions);
 
 module.exports = router;
