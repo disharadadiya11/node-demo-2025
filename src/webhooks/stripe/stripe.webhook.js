@@ -1,7 +1,6 @@
-const stripeService = require("../integrations/stripe/stripe.service");
-const { STRIPE_WEBHOOK_SECRET } = require("../config/env");
-const Payment = require("../modules/payments/payment.model");
-const Order = require("../modules/orders/order.model");
+const { STRIPE_WEBHOOK_SECRET } = require("../../config/env");
+const stripeService = require("../../integrations/stripe/stripe.service");
+const Payment = require("../../modules/payments/payment.model");
 
 /**
  * Handle Stripe webhook events
@@ -142,5 +141,3 @@ const handleChargeRefunded = async (charge) => {
 module.exports = {
   handleStripeWebhook,
 };
-
-

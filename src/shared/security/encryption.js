@@ -18,7 +18,7 @@ const verifyPassword = async (password, hashedPassword) => {
 /**
  * JWT helpers
  */
-const signJwt = (payload, options = {}) => {
+const generateToken = (payload, options = {}) => {
   return jwt.sign(payload, JWT_SECRET, {
     expiresIn: JWT_EXPIRE || "7d",
     ...options,
@@ -32,6 +32,6 @@ const verifyJwt = (token) => {
 module.exports = {
   hashPassword,
   verifyPassword,
-  signJwt,
+  generateToken,
   verifyJwt,
 };

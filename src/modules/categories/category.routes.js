@@ -1,39 +1,36 @@
 const express = require("express");
 const router = express.Router();
+
 const categoryController = require("./category.controller");
-const authenticate = require("../../middlewares/auth.middleware");
-const authorize = require("../../middlewares/role.middleware");
-const validate = require("../../middlewares/validate.middleware");
+const { protect } = require("../../routes/route.protection");
+const validate = require("../../middlewares/validation/validate.middleware");
+
 const {
   createCategorySchema,
   updateCategorySchema,
 } = require("./category.validation");
-const { USER_ROLES } = require("../../shared/constants/app.constants");
 
-// Public routes
+// ==================== PUBLIC ROUTES ====================
+
 router.get("/", categoryController.getAllCategories);
 router.get("/:id", categoryController.getCategoryById);
 
-// Protected routes (Admin only)
+// ==================== ADMIN ROUTES ====================
+
 router.post(
   "/",
-  authenticate,
-  authorize(USER_ROLES.ADMIN),
+  ...protect("ADMIN"),
   validate(createCategorySchema),
   categoryController.createCategory
 );
+
 router.put(
   "/:id",
-  authenticate,
-  authorize(USER_ROLES.ADMIN),
+  ...protect("ADMIN"),
   validate(updateCategorySchema),
   categoryController.updateCategory
 );
-router.delete(
-  "/:id",
-  authenticate,
-  authorize(USER_ROLES.ADMIN),
-  categoryController.deleteCategory
-);
+
+router.delete("/:id", ...protect("ADMIN"), categoryController.deleteCategory);
 
 module.exports = router;

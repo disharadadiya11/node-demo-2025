@@ -7,7 +7,7 @@ const asyncHandler = require("../../shared/helpers/asyncHandler");
 const { successResponse } = require("../../shared/response/apiResponse");
 
 class UserController {
-  register = asyncHandle(async (req, res) => {
+  register = asyncHandler(async (req, res) => {
     const result = await userService.register(req.body);
     successResponse(res, 201, result.message, result);
   });

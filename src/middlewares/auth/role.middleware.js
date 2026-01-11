@@ -1,4 +1,4 @@
-const { errorMessages } = require("../messages");
+const { errorMessages } = require("../../shared/constants/messages");
 const { errorResponse } = require("../../shared/response/apiResponse");
 
 const authorize = (...roles) => {

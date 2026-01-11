@@ -1,29 +1,54 @@
-const { FRONTEND_URL, NODE_ENV } = require('./env');
+const { FRONTEND_URL, NODE_ENV } = require("./env");
+
+/**
+ * Allowed frontend origins
+ * Add more here or via env when needed
+ */
+const ALLOWED_ORIGINS = [
+  FRONTEND_URL,
+  "http://localhost:3000",
+  "http://localhost:3001",
+].filter(Boolean); // removes undefined/null
 
 const corsOptions = {
-  origin: function (origin, callback) {
-    const allowedOrigins = [
-      FRONTEND_URL,
-      'http://localhost:3001',
-      'http://localhost:3000',
-    ];
-
-    // Allow requests with no origin (mobile apps, Postman, etc.)
-    if (!origin || NODE_ENV === 'development') {
+  /**
+   * Origin validation
+   */
+  origin(origin, callback) {
+    // Allow requests with no origin
+    // (mobile apps, server-to-server, Postman, curl)
+    if (!origin) {
       return callback(null, true);
     }
 
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
+    // Allow known frontends
+    if (ALLOWED_ORIGINS.includes(origin)) {
+      return callback(null, true);
     }
+
+    // Block everything else (silent fail – browser friendly)
+    return callback(null, false);
   },
+
+  /**
+   * Cookies / Authorization headers
+   */
   credentials: true,
-  optionsSuccessStatus: 200,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+
+  /**
+   * Allowed HTTP methods
+   */
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+
+  /**
+   * Allowed request headers
+   */
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+
+  /**
+   * Success status for legacy browsers
+   */
+  optionsSuccessStatus: 204,
 };
 
 module.exports = corsOptions;
-

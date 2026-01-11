@@ -1,35 +1,31 @@
-const jwt = require("jsonwebtoken");
-const { JWT_SECRET, JWT_EXPIRE } = require("../../config/env");
+const bcrypt = require("bcryptjs");
+const User = require("./user.model");
+const { generateToken } = require("../../shared/security/encryption");
 const {
-  hashPassword,
-  verifyPassword,
-  generateToken,
-} = require("../../shared/security/encryption");
-const userRepository = require("./user.repository");
-const { errorMessages, successMessages } = require("../../messages");
+  errorMessages,
+  successMessages,
+} = require("../../shared/constants/messages");
 
 class UserService {
+  /* ==================== AUTH ==================== */
+
   async register(userData) {
     const { email, password } = userData;
 
-    // Check if user exists
-    const existingUser = await userRepository.findByEmail(email);
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
       throw new Error(errorMessages.USER_ALREADY_EXISTS);
     }
 
-    // Hash password
-    const hashedPassword = await hashPassword(password);
+    const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Create user
-    const user = await userRepository.create({
+    const user = await User.create({
       ...userData,
       password: hashedPassword,
-      emailVerificationToken: generateToken(),
+      isActive: true,
     });
 
-    // Generate token
-    const token = this.generateToken(user._id);
+    const token = generateToken(user._id);
 
     return {
       user: user.toJSON(),
@@ -39,25 +35,22 @@ class UserService {
   }
 
   async login(email, password) {
-    // Find user with password
-    const user = await userRepository.findByEmail(email);
+    const user = await User.findOne({ email }).select("+password");
+
     if (!user) {
       throw new Error(errorMessages.INVALID_CREDENTIALS);
     }
 
-    // Verify password
-    const isPasswordValid = await verifyPassword(password, user.password);
+    const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       throw new Error(errorMessages.INVALID_CREDENTIALS);
     }
 
-    // Check if user is active
     if (!user.isActive) {
       throw new Error(errorMessages.UNAUTHORIZED);
     }
 
-    // Generate token
-    const token = this.generateToken(user._id);
+    const token = generateToken(user._id);
 
     return {
       user: user.toJSON(),
@@ -66,8 +59,10 @@ class UserService {
     };
   }
 
+  /* ==================== PROFILE ==================== */
+
   async getProfile(userId) {
-    const user = await userRepository.findById(userId);
+    const user = await User.findById(userId);
     if (!user) {
       throw new Error(errorMessages.USER_NOT_FOUND);
     }
@@ -75,10 +70,14 @@ class UserService {
   }
 
   async updateProfile(userId, updateData) {
-    const user = await userRepository.updateById(userId, updateData);
+    const user = await User.findByIdAndUpdate(userId, updateData, {
+      new: true,
+    });
+
     if (!user) {
       throw new Error(errorMessages.USER_NOT_FOUND);
     }
+
     return {
       user,
       message: successMessages.PROFILE_UPDATED,
@@ -86,38 +85,54 @@ class UserService {
   }
 
   async changePassword(userId, currentPassword, newPassword) {
-    const user = await userRepository.findByEmail(
-      (
-        await userRepository.findById(userId)
-      ).email
-    );
+    const user = await User.findById(userId).select("+password");
 
     if (!user) {
       throw new Error(errorMessages.USER_NOT_FOUND);
     }
 
-    // Verify current password
-    const isPasswordValid = await verifyPassword(
+    const isPasswordValid = await bcrypt.compare(
       currentPassword,
       user.password
     );
+
     if (!isPasswordValid) {
       throw new Error(errorMessages.PASSWORD_MISMATCH);
     }
 
-    // Hash new password
-    const hashedPassword = await hashPassword(newPassword);
-    await userRepository.updatePassword(userId, hashedPassword);
+    user.password = await bcrypt.hash(newPassword, 12);
+    await user.save();
 
-    return { message: successMessages.PASSWORD_RESET_SUCCESS };
+    return {
+      message: successMessages.PASSWORD_RESET_SUCCESS,
+    };
   }
 
-  async getAllUsers(filters, pagination) {
-    return await userRepository.findAll(filters, pagination);
+  /* ==================== ADMIN ==================== */
+
+  async getAllUsers(filters = {}, pagination = {}) {
+    const { page = 1, limit = 10 } = pagination;
+    const skip = (page - 1) * limit;
+
+    const [users, total] = await Promise.all([
+      User.find(filters).skip(skip).limit(limit).sort({ createdAt: -1 }),
+
+      User.countDocuments(filters),
+    ]);
+
+    return {
+      data: users,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   async getUserById(id) {
-    const user = await userRepository.findById(id);
+    const user = await User.findById(id);
     if (!user) {
       throw new Error(errorMessages.USER_NOT_FOUND);
     }
@@ -125,10 +140,12 @@ class UserService {
   }
 
   async updateUser(id, updateData) {
-    const user = await userRepository.updateById(id, updateData);
+    const user = await User.findByIdAndUpdate(id, updateData, { new: true });
+
     if (!user) {
       throw new Error(errorMessages.USER_NOT_FOUND);
     }
+
     return {
       user,
       message: successMessages.USER_UPDATED,
@@ -136,17 +153,19 @@ class UserService {
   }
 
   async deleteUser(id) {
-    const user = await userRepository.deleteById(id);
+    const user = await User.findByIdAndUpdate(
+      id,
+      { deletedAt: new Date() },
+      { new: true }
+    );
+
     if (!user) {
       throw new Error(errorMessages.USER_NOT_FOUND);
     }
-    return { message: successMessages.USER_DELETED };
-  }
 
-  generateToken(userId) {
-    return jwt.sign({ id: userId }, JWT_SECRET, {
-      expiresIn: JWT_EXPIRE,
-    });
+    return {
+      message: successMessages.USER_DELETED,
+    };
   }
 }
 

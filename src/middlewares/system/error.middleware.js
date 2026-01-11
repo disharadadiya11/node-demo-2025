@@ -1,6 +1,6 @@
 const { NODE_ENV } = require("../../config/env");
 const { errorResponse } = require("../../shared/response/apiResponse");
-const { errorMessages } = require("../messages");
+const { errorMessages } = require("../../shared/constants/messages");
 
 const errorHandler = (err, req, res, next) => {
   let error = { ...err };

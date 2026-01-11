@@ -14,4 +14,10 @@ module.exports = {
     MEDIUM: 1800, // 30 minutes
     LONG: 3600, // 1 hour
   },
+
+  USER_ROLES: {
+    ADMIN: "admin",
+    USER: "user",
+    SELLER: "seller",
+  },
 };

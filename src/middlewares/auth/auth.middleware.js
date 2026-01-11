@@ -1,8 +1,8 @@
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../../config/env");
-const { errorMessages } = require("../messages");
-const { errorResponse } = require("../../shared/response/apiResponse");
 const User = require("../../modules/users/user.model");
+const { errorMessages } = require("../../shared/constants/messages");
+const { errorResponse } = require("../../shared/response/apiResponse");
 
 const authenticate = async (req, res, next) => {
   try {

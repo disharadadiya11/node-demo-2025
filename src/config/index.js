@@ -1,8 +1,7 @@
-const env = require('./env');
-const { connectDB, disconnectDB } = require('./database');
-const { connectRedis, getRedisClient, disconnectRedis } = require('./redis');
-const logger = require('./logger');
-const corsOptions = require('./cors');
+const env = require("./env");
+const corsOptions = require("./cors");
+const { connectDB, disconnectDB } = require("./database");
+const { connectRedis, getRedisClient, disconnectRedis } = require("./redis");
 
 module.exports = {
   env,
@@ -11,7 +10,5 @@ module.exports = {
   connectRedis,
   getRedisClient,
   disconnectRedis,
-  logger,
   corsOptions,
 };
-

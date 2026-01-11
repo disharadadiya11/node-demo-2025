@@ -1,10 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const userController = require("./user.controller");
-const authenticate = require("../../middlewares/auth.middleware");
-const authorize = require("../../middlewares/role.middleware");
-const validate = require("../../middlewares/validate.middleware");
-const { authLimiter } = require("../../middlewares/rateLimiter.middleware");
+const controller = require("./user.controller");
+const { protect } = require("../../routes/route.protection");
+const validate = require("../../middlewares/validation/validate.middleware");
 const {
   registerSchema,
   loginSchema,
@@ -12,57 +10,40 @@ const {
   changePasswordSchema,
   updateUserSchema,
 } = require("./user.validation");
-const { USER_ROLES } = require("../../shared/constants/app.constants");
 
-// Public routes
-router.post(
-  "/register",
-  authLimiter,
-  validate(registerSchema),
-  userController.register
-);
-router.post("/login", authLimiter, validate(loginSchema), userController.login);
+// Public
+router.post("/register", validate(registerSchema), controller.register);
+router.post("/login", validate(loginSchema), controller.login);
 
-// Protected routes
-router.get("/profile", authenticate, userController.getProfile);
+// Authenticated user
+router.get("/profile", ...protect("USER"), controller.getProfile);
+
 router.put(
   "/profile",
-  authenticate,
+  ...protect("USER"),
   validate(updateProfileSchema),
-  userController.updateProfile
-);
-router.put(
-  "/change-password",
-  authenticate,
-  validate(changePasswordSchema),
-  userController.changePassword
+  controller.updateProfile
 );
 
-// Admin routes
-router.get(
-  "/",
-  authenticate,
-  authorize(USER_ROLES.ADMIN),
-  userController.getAllUsers
+router.put(
+  "/change-password",
+  ...protect("USER"),
+  validate(changePasswordSchema),
+  controller.changePassword
 );
-router.get(
-  "/:id",
-  authenticate,
-  authorize(USER_ROLES.ADMIN),
-  userController.getUserById
-);
+
+// Admin
+router.get("/", ...protect("ADMIN"), controller.getAllUsers);
+
+router.get("/:id", ...protect("ADMIN"), controller.getUserById);
+
 router.put(
   "/:id",
-  authenticate,
-  authorize(USER_ROLES.ADMIN),
+  ...protect("ADMIN"),
   validate(updateUserSchema),
-  userController.updateUser
+  controller.updateUser
 );
-router.delete(
-  "/:id",
-  authenticate,
-  authorize(USER_ROLES.ADMIN),
-  userController.deleteUser
-);
+
+router.delete("/:id", ...protect("ADMIN"), controller.deleteUser);
 
 module.exports = router;

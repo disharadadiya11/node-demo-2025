@@ -1,39 +1,34 @@
 const express = require("express");
 const router = express.Router();
-const productController = require("./product.controller");
-const authenticate = require("../../middlewares/auth.middleware");
-const authorize = require("../../middlewares/role.middleware");
-const validate = require("../../middlewares/validate.middleware");
+
+const controller = require("./product.controller");
+const validate = require("../../middlewares/validation/validate.middleware");
+const { protect } = require("../../routes/route.protection");
+
 const {
   createProductSchema,
   updateProductSchema,
 } = require("./product.validation");
-const { USER_ROLES } = require("../../shared/constants/app.constants");
 
-// Public routes
-router.get("/", productController.getAllProducts);
-router.get("/:id", productController.getProductById);
+// Public
+router.get("/", controller.getAllProducts);
+router.get("/:id", controller.getProductById);
 
-// Protected routes (Admin/Seller only)
+// Protected
 router.post(
   "/",
-  authenticate,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.SELLER),
+  ...protect("PRODUCT_WRITE"),
   validate(createProductSchema),
-  productController.createProduct
+  controller.createProduct
 );
+
 router.put(
   "/:id",
-  authenticate,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.SELLER),
+  ...protect("PRODUCT_WRITE"),
   validate(updateProductSchema),
-  productController.updateProduct
+  controller.updateProduct
 );
-router.delete(
-  "/:id",
-  authenticate,
-  authorize(USER_ROLES.ADMIN),
-  productController.deleteProduct
-);
+
+router.delete("/:id", ...protect("ADMIN"), controller.deleteProduct);
 
 module.exports = router;
