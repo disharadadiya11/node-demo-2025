@@ -1,4 +1,4 @@
-const asyncHandler = require("../../utils/asyncHandler");
+const asyncHandler = require("../../shared/helpers/asyncHandler");
 const { successResponse } = require("../../shared/response/apiResponse");
 const paymentService = require("./payment.service");
 

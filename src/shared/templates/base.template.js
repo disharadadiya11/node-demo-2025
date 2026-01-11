@@ -1,7 +1,7 @@
 /**
  * Base Email Template
  * Provides a consistent HTML structure for all emails
- * 
+ *
  * @param {Object} options - Template options
  * @param {String} options.title - Email title/heading
  * @param {String} options.body - Main email body content (HTML)
@@ -75,7 +75,7 @@ const baseTemplate = ({ title, body }) => {
       ${body}
     </div>
     <div class="footer">
-      <p>© ${new Date().getFullYear()} Node 2025. All rights reserved.</p>
+      <p>© ${new Date().getFullYear()} Node 2026. All rights reserved.</p>
       <p>This is an automated email, please do not reply.</p>
     </div>
   </div>
@@ -85,5 +85,3 @@ const baseTemplate = ({ title, body }) => {
 };
 
 module.exports = baseTemplate;
-
-

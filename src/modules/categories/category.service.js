@@ -1,10 +1,10 @@
-const categoryRepository = require('./category.repository');
-const { errorMessages, successMessages } = require('../../messages');
+const categoryRepository = require("./category.repository");
+const { errorMessages, successMessages } = require("../../shared/constants");
 
 class CategoryService {
   async createCategory(categoryData, userId) {
     const existingCategory = await categoryRepository.findBySlug(
-      categoryData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+      categoryData.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")
     );
 
     if (existingCategory) {
@@ -55,4 +55,3 @@ class CategoryService {
 }
 
 module.exports = new CategoryService();
-

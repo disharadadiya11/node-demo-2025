@@ -1,14 +1,14 @@
 const emailTransporter = require("./email.client");
-const { APP_URL, FRONTEND_URL } = require("../../config/env");
-const welcomeTemplate = require("../../messages/templates/welcome.template");
-const resetPasswordTemplate = require("../../messages/templates/resetPassword.template");
-const baseTemplate = require("../../messages/templates/base.template");
+const { FRONTEND_URL } = require("../../config/env");
+const baseTemplate = require("../../shared/templates/base.template");
+const welcomeTemplate = require("../../shared/templates/welcome.template");
+const resetPasswordTemplate = require("../../shared/templates/resetPassword.template");
 
 class EmailService {
   async sendEmail(to, subject, html, text) {
     try {
       const mailOptions = {
-        from: `"Node 2025" <${process.env.EMAIL_USER}>`,
+        from: `"Node 2026" <${process.env.EMAIL_USER}>`,
         to,
         subject,
         html,
@@ -25,7 +25,7 @@ class EmailService {
   }
 
   async sendWelcomeEmail(user) {
-    const subject = "Welcome to Node 2025";
+    const subject = "Welcome to Node 2026";
     const html = welcomeTemplate({ name: user.name });
     return await this.sendEmail(user.email, subject, html);
   }
@@ -39,7 +39,7 @@ class EmailService {
       <p>Your order <strong>${order.orderNumber}</strong> has been confirmed.</p>
       <p>Total Amount: <strong>₹${order.total}</strong></p>
       <p>Thank you for your purchase! We'll keep you updated on your order status.</p>
-      <p>Best regards,<br>The Node 2025 Team</p>
+      <p>Best regards,<br>The Node 2026 Team</p>
     `;
     const html = baseTemplate({ title, body });
     return await this.sendEmail(user.email, subject, html);
@@ -48,7 +48,10 @@ class EmailService {
   async sendPasswordResetEmail(user, resetToken) {
     const subject = "Password Reset Request";
     const resetUrl = `${FRONTEND_URL}/reset-password?token=${resetToken}`;
-    const html = resetPasswordTemplate({ name: user.name, resetLink: resetUrl });
+    const html = resetPasswordTemplate({
+      name: user.name,
+      resetLink: resetUrl,
+    });
     return await this.sendEmail(user.email, subject, html);
   }
 }

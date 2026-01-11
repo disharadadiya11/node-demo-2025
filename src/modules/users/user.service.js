@@ -1,7 +1,10 @@
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET, JWT_EXPIRE } = require("../../config/env");
-const { hashPassword, verifyPassword } = require("../../utils/encryption");
-const { generateToken } = require("../../utils/encryption");
+const {
+  hashPassword,
+  verifyPassword,
+  generateToken,
+} = require("../../shared/security/encryption");
 const userRepository = require("./user.repository");
 const { errorMessages, successMessages } = require("../../messages");
 

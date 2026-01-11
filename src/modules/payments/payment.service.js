@@ -1,7 +1,7 @@
-const Payment = require('./payment.model');
-const Order = require('../orders/order.model');
-const razorpayService = require('../../integrations/razorpay/razorpay.service');
-const { errorMessages, successMessages } = require('../../messages');
+const Payment = require("./payment.model");
+const Order = require("../orders/order.model");
+const { errorMessages, successMessages } = require("../../messages");
+const razorpayService = require("../../integrations/razorpay/razorpay.service");
 
 class PaymentService {
   async createPayment(orderId, userId, paymentMethod) {
@@ -15,10 +15,10 @@ class PaymentService {
     }
 
     let razorpayOrder = null;
-    if (paymentMethod === 'razorpay') {
+    if (paymentMethod === "razorpay") {
       razorpayOrder = await razorpayService.createOrder({
         amount: order.total * 100, // Convert to paise
-        currency: 'INR',
+        currency: "INR",
         receipt: order.orderNumber,
       });
     }
@@ -29,10 +29,10 @@ class PaymentService {
       amount: order.total,
       paymentMethod,
       razorpayOrderId: razorpayOrder?.id || null,
-      status: paymentMethod === 'cod' ? 'completed' : 'pending',
+      status: paymentMethod === "cod" ? "completed" : "pending",
     });
 
-    if (paymentMethod === 'razorpay') {
+    if (paymentMethod === "razorpay") {
       await Order.findByIdAndUpdate(orderId, {
         paymentId: payment._id,
       });
@@ -45,13 +45,18 @@ class PaymentService {
     };
   }
 
-  async verifyPayment(paymentId, razorpayPaymentId, razorpayOrderId, razorpaySignature) {
+  async verifyPayment(
+    paymentId,
+    razorpayPaymentId,
+    razorpayOrderId,
+    razorpaySignature
+  ) {
     const payment = await Payment.findById(paymentId);
     if (!payment) {
       throw new Error(errorMessages.PAYMENT_NOT_FOUND);
     }
 
-    if (payment.status !== 'pending') {
+    if (payment.status !== "pending") {
       throw new Error(errorMessages.PAYMENT_ALREADY_PROCESSED);
     }
 
@@ -63,7 +68,7 @@ class PaymentService {
 
     if (!isValid) {
       await Payment.findByIdAndUpdate(paymentId, {
-        status: 'failed',
+        status: "failed",
       });
       throw new Error(errorMessages.PAYMENT_FAILED);
     }
@@ -71,7 +76,7 @@ class PaymentService {
     const updatedPayment = await Payment.findByIdAndUpdate(
       paymentId,
       {
-        status: 'completed',
+        status: "completed",
         razorpayPaymentId,
         razorpaySignature,
       },
@@ -79,8 +84,8 @@ class PaymentService {
     );
 
     await Order.findByIdAndUpdate(payment.order, {
-      paymentStatus: 'completed',
-      status: 'confirmed',
+      paymentStatus: "completed",
+      status: "confirmed",
     });
 
     return {
@@ -91,8 +96,8 @@ class PaymentService {
 
   async getPaymentById(id) {
     const payment = await Payment.findById(id)
-      .populate('order')
-      .populate('user', 'name email');
+      .populate("order")
+      .populate("user", "name email");
     if (!payment) {
       throw new Error(errorMessages.PAYMENT_NOT_FOUND);
     }
@@ -101,4 +106,3 @@ class PaymentService {
 }
 
 module.exports = new PaymentService();
-

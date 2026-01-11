@@ -1,10 +1,10 @@
-const asyncHandler = require("../../utils/asyncHandler");
-const { successResponse } = require("../../shared/response/apiResponse");
 const {
   getPaginationParams,
   getPaginationMeta,
-} = require("../../utils/pagination");
+} = require("../../shared/helpers/pagination");
 const productService = require("./product.service");
+const asyncHandler = require("../../shared/helpers/asyncHandler");
+const { successResponse } = require("../../shared/response/apiResponse");
 
 class ProductController {
   createProduct = asyncHandler(async (req, res) => {

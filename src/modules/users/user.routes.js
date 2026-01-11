@@ -12,7 +12,7 @@ const {
   changePasswordSchema,
   updateUserSchema,
 } = require("./user.validation");
-const { USER_ROLES } = require("../../utils/constants");
+const { USER_ROLES } = require("../../shared/constants/app.constants");
 
 // Public routes
 router.post(

@@ -1,6 +1,6 @@
 /**
  * Password Reset Email Template
- * 
+ *
  * @param {Object} options - Template options
  * @param {String} options.name - User's name
  * @param {String} options.resetLink - Password reset link URL
@@ -22,12 +22,10 @@ const resetPasswordTemplate = ({ name, resetLink }) => {
     <p><strong>This link will expire in 1 hour.</strong></p>
     <p>If you didn't request this password reset, please ignore this email. Your password will remain unchanged.</p>
     <p>For security reasons, never share this link with anyone.</p>
-    <p>Best regards,<br>The Node 2025 Team</p>
+    <p>Best regards,<br>The Node 2026 Team</p>
   `;
 
   return baseTemplate({ title, body });
 };
 
 module.exports = resetPasswordTemplate;
-
-

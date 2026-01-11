@@ -4,9 +4,10 @@ const cors = require("cors");
 const morgan = require("morgan");
 const routes = require("./routes");
 const { corsOptions } = require("./config");
-const errorHandler = require("./middlewares/error.middleware");
-const { apiLimiter } = require("./middlewares/rateLimiter.middleware");
-
+const {
+  apiLimiter,
+} = require("../src/middlewares/system/rateLimiter.middleware");
+const { errorHandler } = require("./middlewares/system/error.middleware");
 const app = express();
 
 // Middlewares
@@ -18,10 +19,7 @@ app.use(
 );
 
 // Raw body parser for Stripe webhooks (must be before JSON parser)
-app.use(
-  "/webhooks/stripe",
-  express.raw({ type: "application/json" })
-);
+app.use("/webhooks/stripe", express.raw({ type: "application/json" }));
 
 // JSON and URL-encoded body parsers
 app.use(express.json());

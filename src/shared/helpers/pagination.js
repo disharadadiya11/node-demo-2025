@@ -1,4 +1,8 @@
-const { DEFAULT_PAGE, DEFAULT_LIMIT, MAX_LIMIT } = require("./constants");
+const {
+  DEFAULT_PAGE,
+  DEFAULT_LIMIT,
+  MAX_LIMIT,
+} = require("../../shared/constants/app.constants");
 
 const getPaginationParams = (req) => {
   const page = Math.max(1, parseInt(req.query.page) || DEFAULT_PAGE);

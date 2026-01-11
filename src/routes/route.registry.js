@@ -34,7 +34,7 @@ const {
   updateProductSchema,
 } = require("../modules/products/product.validation");
 
-const { USER_ROLES } = require("../utils/constants");
+const { USER_ROLES } = require("../shared/constants/app.constants");
 
 const routeDefinitions = [
   // ==================== USER ROUTES ====================

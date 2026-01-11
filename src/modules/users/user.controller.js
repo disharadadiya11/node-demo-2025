@@ -1,17 +1,13 @@
-const asyncHandler = require("../../utils/asyncHandler");
-const {
-  successResponse,
-  errorResponse,
-} = require("../../shared/response/apiResponse");
 const {
   getPaginationParams,
   getPaginationMeta,
-} = require("../../utils/pagination");
+} = require("../../shared/helpers/pagination");
 const userService = require("./user.service");
-const { errorMessages } = require("../../messages");
+const asyncHandler = require("../../shared/helpers/asyncHandler");
+const { successResponse } = require("../../shared/response/apiResponse");
 
 class UserController {
-  register = asyncHandler(async (req, res) => {
+  register = asyncHandle(async (req, res) => {
     const result = await userService.register(req.body);
     successResponse(res, 201, result.message, result);
   });
