@@ -19,8 +19,8 @@ class UserController {
   });
 
   getProfile = asyncHandler(async (req, res) => {
-    const user = await userService.getProfile(req.user._id);
-    successResponse(res, 200, "Profile retrieved successfully", { user });
+    const result = await userService.getProfile(req.user._id);
+    successResponse(res, 200, result.message, result);
   });
 
   updateProfile = asyncHandler(async (req, res) => {

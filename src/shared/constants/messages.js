@@ -12,6 +12,7 @@ const successMessages = {
   USER_UPDATED: "User updated successfully",
   USER_DELETED: "User deleted successfully",
   PROFILE_UPDATED: "Profile updated successfully",
+  PROFILE_RETRIEVED: "Profile retrieved successfully",
 
   // Category
   CATEGORY_CREATED: "Category created successfully",

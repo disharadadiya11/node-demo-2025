@@ -25,7 +25,7 @@ class UserService {
       isActive: true,
     });
 
-    const token = generateToken(user._id);
+    const token = generateToken({ id: user._id, role: user.role });
 
     return {
       user: user.toJSON(),
@@ -50,7 +50,7 @@ class UserService {
       throw new Error(errorMessages.UNAUTHORIZED);
     }
 
-    const token = generateToken(user._id);
+    const token = generateToken({ id: user._id, role: user.role });
 
     return {
       user: user.toJSON(),
@@ -66,7 +66,10 @@ class UserService {
     if (!user) {
       throw new Error(errorMessages.USER_NOT_FOUND);
     }
-    return user;
+    return {
+      user,
+      message: successMessages.PROFILE_RETRIEVED,
+    };
   }
 
   async updateProfile(userId, updateData) {

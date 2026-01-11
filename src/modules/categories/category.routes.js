@@ -1,10 +1,8 @@
 const express = require("express");
 const router = express.Router();
-
 const categoryController = require("./category.controller");
 const { protect } = require("../../routes/route.protection");
 const validate = require("../../middlewares/validation/validate.middleware");
-
 const {
   createCategorySchema,
   updateCategorySchema,
