@@ -3,8 +3,10 @@ const {
   errorMessages,
   successMessages,
 } = require("../../shared/constants/messages");
+const { StatusCodes } = require("http-status-codes");
 
 class CategoryService {
+  /* ==================== CREATE ==================== */
   async createCategory(categoryData, userId) {
     const slug = categoryData.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
@@ -20,11 +22,14 @@ class CategoryService {
     });
 
     return {
-      category,
+      statusCode: StatusCodes.CREATED,
+      success: true,
       message: successMessages.CATEGORY_CREATED,
+      data: { category },
     };
   }
 
+  /* ==================== GET BY ID ==================== */
   async getCategoryById(id) {
     const category = await Category.findById(id);
 
@@ -32,34 +37,54 @@ class CategoryService {
       throw new Error(errorMessages.CATEGORY_NOT_FOUND);
     }
 
-    return category;
+    return {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: successMessages.CATEGORY_RETRIEVED,
+      data: { category },
+    };
   }
 
-  async getAllCategories(filters = {}, pagination = {}) {
-    const { page = 1, limit = 10 } = pagination;
+  /* ==================== GET ALL ==================== */
+  async getAllCategories(query = {}) {
+    const { page = 1, limit = 10, isActive } = query;
+
     const skip = (page - 1) * limit;
 
-    const query = {
-      ...filters,
+    const filters = {
       deletedAt: null,
     };
 
+    if (isActive !== undefined) {
+      filters.isActive = isActive === "true";
+    }
+
     const [categories, total] = await Promise.all([
-      Category.find(query).skip(skip).limit(limit).sort({ createdAt: -1 }),
-      Category.countDocuments(query),
+      Category.find(filters)
+        .skip(skip)
+        .limit(Number(limit))
+        .sort({ createdAt: -1 }),
+
+      Category.countDocuments(filters),
     ]);
 
     return {
-      data: categories,
-      meta: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: successMessages.CATEGORIES_RETRIEVED,
+      data: {
+        categories,
+        meta: {
+          page: Number(page),
+          limit: Number(limit),
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
       },
     };
   }
 
+  /* ==================== UPDATE ==================== */
   async updateCategory(id, updateData) {
     const category = await Category.findByIdAndUpdate(id, updateData, {
       new: true,
@@ -70,11 +95,14 @@ class CategoryService {
     }
 
     return {
-      category,
+      statusCode: StatusCodes.OK,
+      success: true,
       message: successMessages.CATEGORY_UPDATED,
+      data: { category },
     };
   }
 
+  /* ==================== DELETE ==================== */
   async deleteCategory(id) {
     const category = await Category.findByIdAndUpdate(
       id,
@@ -87,6 +115,8 @@ class CategoryService {
     }
 
     return {
+      statusCode: StatusCodes.OK,
+      success: true,
       message: successMessages.CATEGORY_DELETED,
     };
   }

@@ -1,5 +1,5 @@
 const swaggerJsdoc = require("swagger-jsdoc");
-const { PORT, NODE_ENV } = require("../config/env");
+const { PORT } = require("../config/env");
 
 const options = {
   definition: {
@@ -8,10 +8,6 @@ const options = {
       title: "Node 2026 API",
       version: "1.0.0",
       description: "E-commerce API documentation",
-      contact: {
-        name: "API Support",
-        email: "support@example.com",
-      },
     },
     servers: [
       {
@@ -34,7 +30,13 @@ const options = {
       },
     ],
   },
-  apis: ["./src/routes/*.js", "./src/modules/**/*.routes.js"],
+
+  // 🔥 VERY IMPORTANT
+  apis: [
+    "./src/routes/*.js",
+    "./src/modules/**/**/*.routes.js",
+    "./src/modules/**/**/*.controller.js",
+  ],
 };
 
 const swaggerSpec = swaggerJsdoc(options);

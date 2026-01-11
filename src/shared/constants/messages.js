@@ -18,11 +18,13 @@ const successMessages = {
   CATEGORY_CREATED: "Category created successfully",
   CATEGORY_UPDATED: "Category updated successfully",
   CATEGORY_DELETED: "Category deleted successfully",
+  CATEGORY_RETRIEVED: "Category retrieved successfully",
 
   // Product
   PRODUCT_CREATED: "Product created successfully",
   PRODUCT_UPDATED: "Product updated successfully",
   PRODUCT_DELETED: "Product deleted successfully",
+  PRODUCT_RETRIEVED: "Product retrieved successfully",
 
   // Payment
   PAYMENT_CREATED: "Payment created successfully",

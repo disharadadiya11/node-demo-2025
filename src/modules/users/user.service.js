@@ -1,10 +1,14 @@
-const bcrypt = require("bcryptjs");
 const User = require("./user.model");
-const { generateToken } = require("../../shared/security/encryption");
+const {
+  generateToken,
+  hashPassword,
+  verifyPassword,
+} = require("../../shared/security/encryption");
 const {
   errorMessages,
   successMessages,
 } = require("../../shared/constants/messages");
+const { StatusCodes } = require("http-status-codes");
 
 class UserService {
   /* ==================== AUTH ==================== */
@@ -14,10 +18,14 @@ class UserService {
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      throw new Error(errorMessages.USER_ALREADY_EXISTS);
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        success: false,
+        message: errorMessages.USER_ALREADY_EXISTS,
+      };
     }
 
-    const hashedPassword = await bcrypt.hash(password, 12);
+    const hashedPassword = await hashPassword(password);
 
     const user = await User.create({
       ...userData,
@@ -28,9 +36,13 @@ class UserService {
     const token = generateToken({ id: user._id, role: user.role });
 
     return {
-      user: user.toJSON(),
-      token,
+      statusCode: StatusCodes.CREATED,
+      success: true,
       message: successMessages.REGISTRATION_SUCCESS,
+      data: {
+        user: user.toJSON(),
+        token,
+      },
     };
   }
 
@@ -38,24 +50,40 @@ class UserService {
     const user = await User.findOne({ email }).select("+password");
 
     if (!user) {
-      throw new Error(errorMessages.INVALID_CREDENTIALS);
+      return {
+        statusCode: StatusCodes.UNAUTHORIZED,
+        success: false,
+        message: errorMessages.INVALID_CREDENTIALS,
+      };
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await verifyPassword(password, user.password);
     if (!isPasswordValid) {
-      throw new Error(errorMessages.INVALID_CREDENTIALS);
+      return {
+        statusCode: StatusCodes.UNAUTHORIZED,
+        success: false,
+        message: errorMessages.INVALID_CREDENTIALS,
+      };
     }
 
     if (!user.isActive) {
-      throw new Error(errorMessages.UNAUTHORIZED);
+      return {
+        statusCode: StatusCodes.FORBIDDEN,
+        success: false,
+        message: errorMessages.UNAUTHORIZED,
+      };
     }
 
     const token = generateToken({ id: user._id, role: user.role });
 
     return {
-      user: user.toJSON(),
-      token,
+      statusCode: StatusCodes.OK,
+      success: true,
       message: successMessages.LOGIN_SUCCESS,
+      data: {
+        user: user.toJSON(),
+        token,
+      },
     };
   }
 
@@ -63,12 +91,20 @@ class UserService {
 
   async getProfile(userId) {
     const user = await User.findById(userId);
+
     if (!user) {
-      throw new Error(errorMessages.USER_NOT_FOUND);
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        success: false,
+        message: errorMessages.USER_NOT_FOUND,
+      };
     }
+
     return {
-      user,
+      statusCode: StatusCodes.OK,
+      success: true,
       message: successMessages.PROFILE_RETRIEVED,
+      data: { user },
     };
   }
 
@@ -78,43 +114,71 @@ class UserService {
     });
 
     if (!user) {
-      throw new Error(errorMessages.USER_NOT_FOUND);
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        success: false,
+        message: errorMessages.USER_NOT_FOUND,
+      };
     }
 
     return {
-      user,
+      statusCode: StatusCodes.OK,
+      success: true,
       message: successMessages.PROFILE_UPDATED,
+      data: { user },
     };
   }
 
-  async changePassword(userId, currentPassword, newPassword) {
+  async changePassword(userId, body) {
+    const { currentPassword, newPassword } = body;
     const user = await User.findById(userId).select("+password");
 
     if (!user) {
-      throw new Error(errorMessages.USER_NOT_FOUND);
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        success: false,
+        message: errorMessages.USER_NOT_FOUND,
+      };
     }
 
-    const isPasswordValid = await bcrypt.compare(
+    const isPasswordValid = await verifyPassword(
       currentPassword,
       user.password
     );
 
     if (!isPasswordValid) {
-      throw new Error(errorMessages.PASSWORD_MISMATCH);
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        success: false,
+        message: errorMessages.PASSWORD_MISMATCH,
+      };
     }
 
-    user.password = await bcrypt.hash(newPassword, 12);
+    user.password = await hashPassword(newPassword);
     await user.save();
 
     return {
+      statusCode: StatusCodes.OK,
+      success: true,
       message: successMessages.PASSWORD_RESET_SUCCESS,
     };
   }
 
   /* ==================== ADMIN ==================== */
 
-  async getAllUsers(filters = {}, pagination = {}) {
-    const { page = 1, limit = 10 } = pagination;
+  async getAllUsers(query = {}) {
+    const filters = {};
+
+    if (query.role) {
+      filters.role = query.role;
+    }
+
+    if (query.isActive !== undefined) {
+      filters.isActive = query.isActive === "true";
+    }
+
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
     const skip = (page - 1) * limit;
 
     const [users, total] = await Promise.all([
@@ -124,34 +188,56 @@ class UserService {
     ]);
 
     return {
-      data: users,
-      meta: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: successMessages.USERS_RETRIEVED,
+      data: {
+        users,
+        meta: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
       },
     };
   }
 
   async getUserById(id) {
     const user = await User.findById(id);
+
     if (!user) {
-      throw new Error(errorMessages.USER_NOT_FOUND);
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        success: false,
+        message: errorMessages.USER_NOT_FOUND,
+      };
     }
-    return user;
+
+    return {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: successMessages.USER_RETRIEVED,
+      data: { user },
+    };
   }
 
   async updateUser(id, updateData) {
     const user = await User.findByIdAndUpdate(id, updateData, { new: true });
 
     if (!user) {
-      throw new Error(errorMessages.USER_NOT_FOUND);
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        success: false,
+        message: errorMessages.USER_NOT_FOUND,
+      };
     }
 
     return {
-      user,
+      statusCode: StatusCodes.OK,
+      success: true,
       message: successMessages.USER_UPDATED,
+      data: { user },
     };
   }
 
@@ -163,10 +249,16 @@ class UserService {
     );
 
     if (!user) {
-      throw new Error(errorMessages.USER_NOT_FOUND);
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        success: false,
+        message: errorMessages.USER_NOT_FOUND,
+      };
     }
 
     return {
+      statusCode: StatusCodes.OK,
+      success: true,
       message: successMessages.USER_DELETED,
     };
   }

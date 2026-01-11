@@ -9,6 +9,7 @@ const { corsOptions } = require("./config");
 const webhookRoutes = require("./webhooks/index");
 const { apiLimiter } = require("./middlewares/system/rateLimiter.middleware");
 const { errorHandler } = require("./middlewares/system/error.middleware");
+const setupSwagger = require("./docs/swagger.loader");
 
 const app = express();
 
@@ -43,6 +44,9 @@ app.use("/api", apiLimiter);
  * Routes
  */
 app.use("/", routes);
+
+/* Swagger Docs 🚀 */
+setupSwagger(app);
 
 /**
  * Error handler (last)
