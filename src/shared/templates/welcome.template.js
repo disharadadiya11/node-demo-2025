@@ -22,3 +22,4 @@ const welcomeTemplate = ({ name }) => {
 
 module.exports = welcomeTemplate;
 
+

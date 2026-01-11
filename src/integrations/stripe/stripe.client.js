@@ -10,4 +10,3 @@ if (!STRIPE_SECRET_KEY) {
 const stripeClient = stripe(STRIPE_SECRET_KEY);
 
 module.exports = stripeClient;
-

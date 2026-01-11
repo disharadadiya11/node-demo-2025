@@ -1,5 +1,5 @@
 const asyncHandler = require("../../utils/asyncHandler");
-const { successResponse } = require("../../utils/apiResponse");
+const { successResponse } = require("../../shared/response/apiResponse");
 const paymentService = require("./payment.service");
 
 class PaymentController {
@@ -14,12 +14,8 @@ class PaymentController {
   });
 
   verifyPayment = asyncHandler(async (req, res) => {
-    const {
-      paymentId,
-      razorpayPaymentId,
-      razorpayOrderId,
-      razorpaySignature,
-    } = req.body;
+    const { paymentId, razorpayPaymentId, razorpayOrderId, razorpaySignature } =
+      req.body;
     const result = await paymentService.verifyPayment(
       paymentId,
       razorpayPaymentId,
@@ -36,4 +32,3 @@ class PaymentController {
 }
 
 module.exports = new PaymentController();
-

@@ -1,8 +1,14 @@
-const asyncHandler = require('../../utils/asyncHandler');
-const { successResponse, errorResponse } = require('../../utils/apiResponse');
-const { getPaginationParams, getPaginationMeta } = require('../../utils/pagination');
-const userService = require('./user.service');
-const { errorMessages } = require('../../messages');
+const asyncHandler = require("../../utils/asyncHandler");
+const {
+  successResponse,
+  errorResponse,
+} = require("../../shared/response/apiResponse");
+const {
+  getPaginationParams,
+  getPaginationMeta,
+} = require("../../utils/pagination");
+const userService = require("./user.service");
+const { errorMessages } = require("../../messages");
 
 class UserController {
   register = asyncHandler(async (req, res) => {
@@ -18,7 +24,7 @@ class UserController {
 
   getProfile = asyncHandler(async (req, res) => {
     const user = await userService.getProfile(req.user._id);
-    successResponse(res, 200, 'Profile retrieved successfully', { user });
+    successResponse(res, 200, "Profile retrieved successfully", { user });
   });
 
   updateProfile = asyncHandler(async (req, res) => {
@@ -39,14 +45,15 @@ class UserController {
   getAllUsers = asyncHandler(async (req, res) => {
     const pagination = getPaginationParams(req);
     const filters = {};
-    
+
     if (req.query.role) filters.role = req.query.role;
-    if (req.query.isActive !== undefined) filters.isActive = req.query.isActive === 'true';
+    if (req.query.isActive !== undefined)
+      filters.isActive = req.query.isActive === "true";
 
     const { data, total } = await userService.getAllUsers(filters, pagination);
     const meta = getPaginationMeta(pagination.page, pagination.limit, total);
 
-    successResponse(res, 200, 'Users retrieved successfully', {
+    successResponse(res, 200, "Users retrieved successfully", {
       users: data,
       meta,
     });
@@ -54,7 +61,7 @@ class UserController {
 
   getUserById = asyncHandler(async (req, res) => {
     const user = await userService.getUserById(req.params.id);
-    successResponse(res, 200, 'User retrieved successfully', { user });
+    successResponse(res, 200, "User retrieved successfully", { user });
   });
 
   updateUser = asyncHandler(async (req, res) => {
@@ -69,4 +76,3 @@ class UserController {
 }
 
 module.exports = new UserController();
-

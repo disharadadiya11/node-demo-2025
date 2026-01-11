@@ -1,6 +1,6 @@
 const cron = require("node-cron");
-const Order = require("../modules/orders/order.model");
-const { ORDER_STATUS } = require("../modules/orders/order.constants");
+const Order = require("../../modules/orders/order.model");
+const { ORDER_STATUS } = require("../../modules/orders/order.constants");
 
 // Clean up pending orders older than 24 hours
 const cleanupPendingOrders = async () => {

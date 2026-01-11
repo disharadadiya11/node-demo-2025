@@ -1,5 +1,5 @@
 const asyncHandler = require("../../utils/asyncHandler");
-const { successResponse } = require("../../utils/apiResponse");
+const { successResponse } = require("../../shared/response/apiResponse");
 const {
   getPaginationParams,
   getPaginationMeta,

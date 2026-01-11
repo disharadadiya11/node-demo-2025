@@ -1,5 +1,5 @@
-const { errorMessages } = require('../messages');
-const { errorResponse } = require('../utils/apiResponse');
+const { errorMessages } = require("../messages");
+const { errorResponse } = require("../../shared/response/apiResponse");
 
 const authorize = (...roles) => {
   return (req, res, next) => {
@@ -16,4 +16,3 @@ const authorize = (...roles) => {
 };
 
 module.exports = authorize;
-

@@ -1,4 +1,4 @@
-const { startOrderCleanupJob } = require('./orderCleanup.job');
+const { startOrderCleanupJob } = require("./order/cleanup.job");
 
 const startAllJobs = () => {
   startOrderCleanupJob();
@@ -7,4 +7,3 @@ const startAllJobs = () => {
 module.exports = {
   startAllJobs,
 };
-

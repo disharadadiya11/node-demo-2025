@@ -1,7 +1,7 @@
 /**
  * Central Route Registry
  * Declarative API route definitions
- * 
+ *
  * Each route definition includes:
  * - method: HTTP method (get, post, put, delete, etc.)
  * - path: Route path (relative to base path)

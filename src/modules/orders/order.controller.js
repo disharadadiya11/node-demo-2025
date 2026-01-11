@@ -1,7 +1,10 @@
-const asyncHandler = require('../../utils/asyncHandler');
-const { successResponse } = require('../../utils/apiResponse');
-const { getPaginationParams, getPaginationMeta } = require('../../utils/pagination');
-const orderService = require('./order.service');
+const asyncHandler = require("../../utils/asyncHandler");
+const { successResponse } = require("../../shared/response/apiResponse");
+const {
+  getPaginationParams,
+  getPaginationMeta,
+} = require("../../utils/pagination");
+const orderService = require("./order.service");
 
 class OrderController {
   createOrder = asyncHandler(async (req, res) => {
@@ -10,16 +13,21 @@ class OrderController {
   });
 
   getOrderById = asyncHandler(async (req, res) => {
-    const order = await orderService.getOrderById(req.params.id, req.user._id, req.user.role);
-    successResponse(res, 200, 'Order retrieved successfully', { order });
+    const order = await orderService.getOrderById(
+      req.params.id,
+      req.user._id,
+      req.user.role
+    );
+    successResponse(res, 200, "Order retrieved successfully", { order });
   });
 
   getAllOrders = asyncHandler(async (req, res) => {
     const pagination = getPaginationParams(req);
     const filters = {};
-    
+
     if (req.query.status) filters.status = req.query.status;
-    if (req.query.paymentStatus) filters.paymentStatus = req.query.paymentStatus;
+    if (req.query.paymentStatus)
+      filters.paymentStatus = req.query.paymentStatus;
 
     const { data, total } = await orderService.getAllOrders(
       filters,
@@ -29,7 +37,7 @@ class OrderController {
     );
     const meta = getPaginationMeta(pagination.page, pagination.limit, total);
 
-    successResponse(res, 200, 'Orders retrieved successfully', {
+    successResponse(res, 200, "Orders retrieved successfully", {
       orders: data,
       meta,
     });
@@ -50,4 +58,3 @@ class OrderController {
 }
 
 module.exports = new OrderController();
-

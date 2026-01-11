@@ -1,5 +1,5 @@
-const { errorMessages } = require('../messages');
-const { errorResponse } = require('../utils/apiResponse');
+const { errorMessages } = require("../messages");
+const { errorResponse } = require("../../shared/response/apiResponse");
 
 const validate = (schema) => {
   return (req, res, next) => {
@@ -10,7 +10,7 @@ const validate = (schema) => {
 
     if (error) {
       const errors = error.details.map((detail) => ({
-        field: detail.path.join('.'),
+        field: detail.path.join("."),
         message: detail.message,
       }));
 
@@ -23,4 +23,3 @@ const validate = (schema) => {
 };
 
 module.exports = validate;
-

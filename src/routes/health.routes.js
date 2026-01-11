@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { connectDB } = require("../config/database");
 const { getRedisClient } = require("../config/redis");
-const { successResponse } = require("../utils/apiResponse");
+const { successResponse } = require("../shared/response/apiResponse");
 
 router.get("/health", async (req, res) => {
   const health = {

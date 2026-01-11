@@ -86,3 +86,4 @@ const baseTemplate = ({ title, body }) => {
 
 module.exports = baseTemplate;
 
+

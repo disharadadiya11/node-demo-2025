@@ -1,7 +1,10 @@
-const asyncHandler = require('../../utils/asyncHandler');
-const { successResponse } = require('../../utils/apiResponse');
-const { getPaginationParams, getPaginationMeta } = require('../../utils/pagination');
-const productService = require('./product.service');
+const asyncHandler = require("../../utils/asyncHandler");
+const { successResponse } = require("../../shared/response/apiResponse");
+const {
+  getPaginationParams,
+  getPaginationMeta,
+} = require("../../utils/pagination");
+const productService = require("./product.service");
 
 class ProductController {
   createProduct = asyncHandler(async (req, res) => {
@@ -11,26 +14,32 @@ class ProductController {
 
   getProductById = asyncHandler(async (req, res) => {
     const product = await productService.getProductById(req.params.id);
-    successResponse(res, 200, 'Product retrieved successfully', { product });
+    successResponse(res, 200, "Product retrieved successfully", { product });
   });
 
   getAllProducts = asyncHandler(async (req, res) => {
     const pagination = getPaginationParams(req);
     const filters = {};
-    
+
     if (req.query.category) filters.category = req.query.category;
-    if (req.query.isActive !== undefined) filters.isActive = req.query.isActive === 'true';
-    if (req.query.isFeatured !== undefined) filters.isFeatured = req.query.isFeatured === 'true';
-    if (req.query.minPrice) filters.price = { $gte: parseFloat(req.query.minPrice) };
+    if (req.query.isActive !== undefined)
+      filters.isActive = req.query.isActive === "true";
+    if (req.query.isFeatured !== undefined)
+      filters.isFeatured = req.query.isFeatured === "true";
+    if (req.query.minPrice)
+      filters.price = { $gte: parseFloat(req.query.minPrice) };
     if (req.query.maxPrice) {
       filters.price = filters.price || {};
       filters.price.$lte = parseFloat(req.query.maxPrice);
     }
 
-    const { data, total } = await productService.getAllProducts(filters, pagination);
+    const { data, total } = await productService.getAllProducts(
+      filters,
+      pagination
+    );
     const meta = getPaginationMeta(pagination.page, pagination.limit, total);
 
-    successResponse(res, 200, 'Products retrieved successfully', {
+    successResponse(res, 200, "Products retrieved successfully", {
       products: data,
       meta,
     });
@@ -48,4 +57,3 @@ class ProductController {
 }
 
 module.exports = new ProductController();
-

@@ -30,3 +30,4 @@ const resetPasswordTemplate = ({ name, resetLink }) => {
 
 module.exports = resetPasswordTemplate;
 
+
