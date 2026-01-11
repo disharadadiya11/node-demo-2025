@@ -2,33 +2,48 @@ const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../../config/env");
 const User = require("../../modules/users/user.model");
 const { errorMessages } = require("../../shared/constants/messages");
-const { errorResponse } = require("../../shared/response/apiResponse");
+const { StatusCodes } = require("http-status-codes");
+const { buildError } = require("../../shared/response/apiResponse");
 
 const authenticate = async (req, res, next) => {
   try {
-    const token = req.headers.authorization?.replace("Bearer ", "");
+    const authHeader = req.headers.authorization;
 
-    if (!token) {
-      return errorResponse(res, 401, errorMessages.UNAUTHORIZED);
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      const result = buildError(
+        StatusCodes.UNAUTHORIZED,
+        errorMessages.UNAUTHORIZED
+      );
+      return res.status(result.statusCode).json(result);
     }
 
+    const token = authHeader.replace("Bearer ", "");
     const decoded = jwt.verify(token, JWT_SECRET);
-    const user = await User.findById(decoded.id).select("-password");
 
+    const user = await User.findById(decoded.id).select("-password");
     if (!user) {
-      return errorResponse(res, 401, errorMessages.UNAUTHORIZED);
+      const result = buildError(
+        StatusCodes.UNAUTHORIZED,
+        errorMessages.UNAUTHORIZED
+      );
+      return res.status(result.statusCode).json(result);
     }
 
     req.user = user;
     next();
   } catch (error) {
+    let message = errorMessages.UNAUTHORIZED;
+
     if (error.name === "TokenExpiredError") {
-      return errorResponse(res, 401, errorMessages.TOKEN_EXPIRED);
+      message = errorMessages.TOKEN_EXPIRED;
     }
+
     if (error.name === "JsonWebTokenError") {
-      return errorResponse(res, 401, errorMessages.TOKEN_INVALID);
+      message = errorMessages.TOKEN_INVALID;
     }
-    return errorResponse(res, 401, errorMessages.UNAUTHORIZED);
+
+    const result = buildError(StatusCodes.UNAUTHORIZED, message);
+    return res.status(result.statusCode).json(result);
   }
 };
 

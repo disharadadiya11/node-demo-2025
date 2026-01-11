@@ -1,5 +1,5 @@
 const { errorMessages } = require("../../shared/constants/messages");
-const { errorResponse } = require("../../shared/response/apiResponse");
+const { buildError } = require("../../shared/response/apiResponse");
 
 const validate = (schema) => {
   return (req, res, next) => {
@@ -14,7 +14,10 @@ const validate = (schema) => {
         message: detail.message,
       }));
 
-      return errorResponse(res, 400, errorMessages.VALIDATION_ERROR, errors);
+      const response = buildError(400, errorMessages.VALIDATION_ERROR);
+      response.errors = errors;
+
+      return res.status(400).json(response);
     }
 
     req.body = value;

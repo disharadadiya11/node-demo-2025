@@ -4,6 +4,10 @@ const {
   successMessages,
 } = require("../../shared/constants/messages");
 const { StatusCodes } = require("http-status-codes");
+const {
+  buildSuccess,
+  buildError,
+} = require("../../shared/response/apiResponse");
 
 class CategoryService {
   /* ==================== CREATE ==================== */
@@ -12,7 +16,10 @@ class CategoryService {
 
     const existingCategory = await Category.findOne({ slug });
     if (existingCategory) {
-      throw new Error(errorMessages.CATEGORY_ALREADY_EXISTS);
+      return buildError(
+        StatusCodes.BAD_REQUEST,
+        errorMessages.CATEGORY_ALREADY_EXISTS
+      );
     }
 
     const category = await Category.create({
@@ -21,12 +28,9 @@ class CategoryService {
       createdBy: userId,
     });
 
-    return {
-      statusCode: StatusCodes.CREATED,
-      success: true,
-      message: successMessages.CATEGORY_CREATED,
-      data: { category },
-    };
+    return buildSuccess(StatusCodes.CREATED, successMessages.CATEGORY_CREATED, {
+      category,
+    });
   }
 
   /* ==================== GET BY ID ==================== */
@@ -34,54 +38,44 @@ class CategoryService {
     const category = await Category.findById(id);
 
     if (!category) {
-      throw new Error(errorMessages.CATEGORY_NOT_FOUND);
+      return buildError(
+        StatusCodes.NOT_FOUND,
+        errorMessages.CATEGORY_NOT_FOUND
+      );
     }
 
-    return {
-      statusCode: StatusCodes.OK,
-      success: true,
-      message: successMessages.CATEGORY_RETRIEVED,
-      data: { category },
-    };
+    return buildSuccess(StatusCodes.OK, successMessages.CATEGORY_RETRIEVED, {
+      category,
+    });
   }
 
   /* ==================== GET ALL ==================== */
   async getAllCategories(query = {}) {
-    const { page = 1, limit = 10, isActive } = query;
-
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    const filters = {
-      deletedAt: null,
-    };
+    const filters = { deletedAt: null };
 
-    if (isActive !== undefined) {
-      filters.isActive = isActive === "true";
+    if (query.isActive !== undefined) {
+      filters.isActive = query.isActive === "true";
     }
 
     const [categories, total] = await Promise.all([
-      Category.find(filters)
-        .skip(skip)
-        .limit(Number(limit))
-        .sort({ createdAt: -1 }),
+      Category.find(filters).skip(skip).limit(limit).sort({ createdAt: -1 }),
 
       Category.countDocuments(filters),
     ]);
 
-    return {
-      statusCode: StatusCodes.OK,
-      success: true,
-      message: successMessages.CATEGORIES_RETRIEVED,
-      data: {
-        categories,
-        meta: {
-          page: Number(page),
-          limit: Number(limit),
-          total,
-          totalPages: Math.ceil(total / limit),
-        },
+    return buildSuccess(StatusCodes.OK, successMessages.CATEGORIES_RETRIEVED, {
+      categories,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
       },
-    };
+    });
   }
 
   /* ==================== UPDATE ==================== */
@@ -91,15 +85,15 @@ class CategoryService {
     });
 
     if (!category) {
-      throw new Error(errorMessages.CATEGORY_NOT_FOUND);
+      return buildError(
+        StatusCodes.NOT_FOUND,
+        errorMessages.CATEGORY_NOT_FOUND
+      );
     }
 
-    return {
-      statusCode: StatusCodes.OK,
-      success: true,
-      message: successMessages.CATEGORY_UPDATED,
-      data: { category },
-    };
+    return buildSuccess(StatusCodes.OK, successMessages.CATEGORY_UPDATED, {
+      category,
+    });
   }
 
   /* ==================== DELETE ==================== */
@@ -111,14 +105,13 @@ class CategoryService {
     );
 
     if (!category) {
-      throw new Error(errorMessages.CATEGORY_NOT_FOUND);
+      return buildError(
+        StatusCodes.NOT_FOUND,
+        errorMessages.CATEGORY_NOT_FOUND
+      );
     }
 
-    return {
-      statusCode: StatusCodes.OK,
-      success: true,
-      message: successMessages.CATEGORY_DELETED,
-    };
+    return buildSuccess(StatusCodes.OK, successMessages.CATEGORY_DELETED);
   }
 }
 

@@ -9,6 +9,10 @@ const {
   successMessages,
 } = require("../../shared/constants/messages");
 const { StatusCodes } = require("http-status-codes");
+const {
+  buildSuccess,
+  buildError,
+} = require("../../shared/response/apiResponse");
 
 class UserService {
   /* ==================== AUTH ==================== */
@@ -18,11 +22,10 @@ class UserService {
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return {
-        statusCode: StatusCodes.BAD_REQUEST,
-        success: false,
-        message: errorMessages.USER_ALREADY_EXISTS,
-      };
+      return buildError(
+        StatusCodes.BAD_REQUEST,
+        errorMessages.USER_ALREADY_EXISTS
+      );
     }
 
     const hashedPassword = await hashPassword(password);
@@ -35,56 +38,44 @@ class UserService {
 
     const token = generateToken({ id: user._id, role: user.role });
 
-    return {
-      statusCode: StatusCodes.CREATED,
-      success: true,
-      message: successMessages.REGISTRATION_SUCCESS,
-      data: {
+    return buildSuccess(
+      StatusCodes.CREATED,
+      successMessages.REGISTRATION_SUCCESS,
+      {
         user: user.toJSON(),
         token,
-      },
-    };
+      }
+    );
   }
 
   async login(email, password) {
     const user = await User.findOne({ email }).select("+password");
 
     if (!user) {
-      return {
-        statusCode: StatusCodes.UNAUTHORIZED,
-        success: false,
-        message: errorMessages.INVALID_CREDENTIALS,
-      };
+      return buildError(
+        StatusCodes.UNAUTHORIZED,
+        errorMessages.INVALID_CREDENTIALS
+      );
     }
 
     const isPasswordValid = await verifyPassword(password, user.password);
     if (!isPasswordValid) {
-      return {
-        statusCode: StatusCodes.UNAUTHORIZED,
-        success: false,
-        message: errorMessages.INVALID_CREDENTIALS,
-      };
+      return buildError(
+        StatusCodes.UNAUTHORIZED,
+        errorMessages.INVALID_CREDENTIALS
+      );
     }
 
     if (!user.isActive) {
-      return {
-        statusCode: StatusCodes.FORBIDDEN,
-        success: false,
-        message: errorMessages.UNAUTHORIZED,
-      };
+      return buildError(StatusCodes.FORBIDDEN, errorMessages.UNAUTHORIZED);
     }
 
     const token = generateToken({ id: user._id, role: user.role });
 
-    return {
-      statusCode: StatusCodes.OK,
-      success: true,
-      message: successMessages.LOGIN_SUCCESS,
-      data: {
-        user: user.toJSON(),
-        token,
-      },
-    };
+    return buildSuccess(StatusCodes.OK, successMessages.LOGIN_SUCCESS, {
+      user: user.toJSON(),
+      token,
+    });
   }
 
   /* ==================== PROFILE ==================== */
@@ -93,19 +84,12 @@ class UserService {
     const user = await User.findById(userId);
 
     if (!user) {
-      return {
-        statusCode: StatusCodes.NOT_FOUND,
-        success: false,
-        message: errorMessages.USER_NOT_FOUND,
-      };
+      return buildError(StatusCodes.NOT_FOUND, errorMessages.USER_NOT_FOUND);
     }
 
-    return {
-      statusCode: StatusCodes.OK,
-      success: true,
-      message: successMessages.PROFILE_RETRIEVED,
-      data: { user },
-    };
+    return buildSuccess(StatusCodes.OK, successMessages.PROFILE_RETRIEVED, {
+      user,
+    });
   }
 
   async updateProfile(userId, updateData) {
@@ -114,31 +98,20 @@ class UserService {
     });
 
     if (!user) {
-      return {
-        statusCode: StatusCodes.NOT_FOUND,
-        success: false,
-        message: errorMessages.USER_NOT_FOUND,
-      };
+      return buildError(StatusCodes.NOT_FOUND, errorMessages.USER_NOT_FOUND);
     }
 
-    return {
-      statusCode: StatusCodes.OK,
-      success: true,
-      message: successMessages.PROFILE_UPDATED,
-      data: { user },
-    };
+    return buildSuccess(StatusCodes.OK, successMessages.PROFILE_UPDATED, {
+      user,
+    });
   }
 
   async changePassword(userId, body) {
     const { currentPassword, newPassword } = body;
-    const user = await User.findById(userId).select("+password");
 
+    const user = await User.findById(userId).select("+password");
     if (!user) {
-      return {
-        statusCode: StatusCodes.NOT_FOUND,
-        success: false,
-        message: errorMessages.USER_NOT_FOUND,
-      };
+      return buildError(StatusCodes.NOT_FOUND, errorMessages.USER_NOT_FOUND);
     }
 
     const isPasswordValid = await verifyPassword(
@@ -147,21 +120,16 @@ class UserService {
     );
 
     if (!isPasswordValid) {
-      return {
-        statusCode: StatusCodes.BAD_REQUEST,
-        success: false,
-        message: errorMessages.PASSWORD_MISMATCH,
-      };
+      return buildError(
+        StatusCodes.BAD_REQUEST,
+        errorMessages.PASSWORD_MISMATCH
+      );
     }
 
     user.password = await hashPassword(newPassword);
     await user.save();
 
-    return {
-      statusCode: StatusCodes.OK,
-      success: true,
-      message: successMessages.PASSWORD_RESET_SUCCESS,
-    };
+    return buildSuccess(StatusCodes.OK, successMessages.PASSWORD_RESET_SUCCESS);
   }
 
   /* ==================== ADMIN ==================== */
@@ -169,13 +137,9 @@ class UserService {
   async getAllUsers(query = {}) {
     const filters = {};
 
-    if (query.role) {
-      filters.role = query.role;
-    }
-
-    if (query.isActive !== undefined) {
+    if (query.role) filters.role = query.role;
+    if (query.isActive !== undefined)
       filters.isActive = query.isActive === "true";
-    }
 
     const page = Number(query.page) || 1;
     const limit = Number(query.limit) || 10;
@@ -183,62 +147,42 @@ class UserService {
 
     const [users, total] = await Promise.all([
       User.find(filters).skip(skip).limit(limit).sort({ createdAt: -1 }),
-
       User.countDocuments(filters),
     ]);
 
-    return {
-      statusCode: StatusCodes.OK,
-      success: true,
-      message: successMessages.USERS_RETRIEVED,
-      data: {
-        users,
-        meta: {
-          page,
-          limit,
-          total,
-          totalPages: Math.ceil(total / limit),
-        },
+    return buildSuccess(StatusCodes.OK, successMessages.USERS_RETRIEVED, {
+      users,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
       },
-    };
+    });
   }
 
   async getUserById(id) {
     const user = await User.findById(id);
 
     if (!user) {
-      return {
-        statusCode: StatusCodes.NOT_FOUND,
-        success: false,
-        message: errorMessages.USER_NOT_FOUND,
-      };
+      return buildError(StatusCodes.NOT_FOUND, errorMessages.USER_NOT_FOUND);
     }
 
-    return {
-      statusCode: StatusCodes.OK,
-      success: true,
-      message: successMessages.USER_RETRIEVED,
-      data: { user },
-    };
+    return buildSuccess(StatusCodes.OK, successMessages.USER_RETRIEVED, {
+      user,
+    });
   }
 
   async updateUser(id, updateData) {
-    const user = await User.findByIdAndUpdate(id, updateData, { new: true });
+    const user = await User.findByIdAndUpdate(id, updateData, {
+      new: true,
+    });
 
     if (!user) {
-      return {
-        statusCode: StatusCodes.NOT_FOUND,
-        success: false,
-        message: errorMessages.USER_NOT_FOUND,
-      };
+      return buildError(StatusCodes.NOT_FOUND, errorMessages.USER_NOT_FOUND);
     }
 
-    return {
-      statusCode: StatusCodes.OK,
-      success: true,
-      message: successMessages.USER_UPDATED,
-      data: { user },
-    };
+    return buildSuccess(StatusCodes.OK, successMessages.USER_UPDATED, { user });
   }
 
   async deleteUser(id) {
@@ -249,18 +193,10 @@ class UserService {
     );
 
     if (!user) {
-      return {
-        statusCode: StatusCodes.NOT_FOUND,
-        success: false,
-        message: errorMessages.USER_NOT_FOUND,
-      };
+      return buildError(StatusCodes.NOT_FOUND, errorMessages.USER_NOT_FOUND);
     }
 
-    return {
-      statusCode: StatusCodes.OK,
-      success: true,
-      message: successMessages.USER_DELETED,
-    };
+    return buildSuccess(StatusCodes.OK, successMessages.USER_DELETED);
   }
 }
 

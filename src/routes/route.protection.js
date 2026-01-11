@@ -15,7 +15,7 @@ const ROUTE_PROTECTION = {
     auth: true,
   },
 
-  ADMIN_ONLY: {
+  ADMIN: {
     auth: true,
     roles: [USER_ROLES.ADMIN],
   },

@@ -6,7 +6,7 @@ const { FRONTEND_URL, NODE_ENV } = require("./env");
  */
 const ALLOWED_ORIGINS = [
   FRONTEND_URL,
-  "http://localhost:3000",
+  "http://localhost:2026",
   "http://localhost:3001",
 ].filter(Boolean); // removes undefined/null
 

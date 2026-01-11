@@ -14,7 +14,6 @@ class ProductService {
   /* ==================== CREATE ==================== */
 
   async createProduct(productData, userId) {
-    // Verify category exists
     const category = await Category.findById(productData.category);
     if (!category) {
       return buildError(
@@ -28,7 +27,7 @@ class ProductService {
       createdBy: userId,
     });
 
-    return buildSuccess(StatusCodes.OK, successMessages.PRODUCT_CREATED, {
+    return buildSuccess(StatusCodes.CREATED, successMessages.PRODUCT_CREATED, {
       product,
     });
   }
@@ -68,7 +67,6 @@ class ProductService {
     const limit = Number(query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    /* ---------- db ---------- */
     const [products, total] = await Promise.all([
       Product.find(filters)
         .populate("category", "_id name")
@@ -79,20 +77,15 @@ class ProductService {
       Product.countDocuments(filters),
     ]);
 
-    return {
-      statusCode: StatusCodes.OK,
-      success: true,
-      message: successMessages.PRODUCTS_RETRIEVED,
-      data: {
-        products,
-        meta: {
-          page,
-          limit,
-          total,
-          totalPages: Math.ceil(total / limit),
-        },
+    return buildSuccess(StatusCodes.OK, successMessages.PRODUCTS_RETRIEVED, {
+      products,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
       },
-    };
+    });
   }
 
   /* ==================== UPDATE ==================== */
@@ -101,11 +94,10 @@ class ProductService {
     if (updateData.category) {
       const category = await Category.findById(updateData.category);
       if (!category) {
-        return {
-          statusCode: StatusCodes.NOT_FOUND,
-          success: false,
-          message: errorMessages.CATEGORY_NOT_FOUND,
-        };
+        return buildError(
+          StatusCodes.NOT_FOUND,
+          errorMessages.CATEGORY_NOT_FOUND
+        );
       }
     }
 
@@ -114,19 +106,12 @@ class ProductService {
     });
 
     if (!product) {
-      return {
-        statusCode: StatusCodes.NOT_FOUND,
-        success: false,
-        message: errorMessages.PRODUCT_NOT_FOUND,
-      };
+      return buildError(StatusCodes.NOT_FOUND, errorMessages.PRODUCT_NOT_FOUND);
     }
 
-    return {
-      statusCode: StatusCodes.OK,
-      success: true,
-      message: successMessages.PRODUCT_UPDATED,
-      data: { product },
-    };
+    return buildSuccess(StatusCodes.OK, successMessages.PRODUCT_UPDATED, {
+      product,
+    });
   }
 
   /* ==================== DELETE ==================== */
@@ -139,18 +124,10 @@ class ProductService {
     );
 
     if (!product) {
-      return {
-        statusCode: StatusCodes.NOT_FOUND,
-        success: false,
-        message: errorMessages.PRODUCT_NOT_FOUND,
-      };
+      return buildError(StatusCodes.NOT_FOUND, errorMessages.PRODUCT_NOT_FOUND);
     }
 
-    return {
-      statusCode: StatusCodes.OK,
-      success: true,
-      message: successMessages.PRODUCT_DELETED,
-    };
+    return buildSuccess(StatusCodes.OK, successMessages.PRODUCT_DELETED);
   }
 
   /* ==================== STOCK ==================== */
@@ -159,27 +136,19 @@ class ProductService {
     const product = await Product.findById(productId);
 
     if (!product) {
-      return {
-        statusCode: StatusCodes.NOT_FOUND,
-        success: false,
-        message: errorMessages.PRODUCT_NOT_FOUND,
-      };
+      return buildError(StatusCodes.NOT_FOUND, errorMessages.PRODUCT_NOT_FOUND);
     }
 
     if (product.stock < quantity) {
-      return {
-        statusCode: StatusCodes.BAD_REQUEST,
-        success: false,
-        message: errorMessages.INSUFFICIENT_STOCK,
-      };
+      return buildError(
+        StatusCodes.BAD_REQUEST,
+        errorMessages.INSUFFICIENT_STOCK
+      );
     }
 
-    return {
-      statusCode: StatusCodes.OK,
-      success: true,
-      message: successMessages.STOCK_AVAILABLE,
-      data: { product },
-    };
+    return buildSuccess(StatusCodes.OK, successMessages.STOCK_AVAILABLE, {
+      product,
+    });
   }
 
   async updateStock(productId, quantity) {
@@ -190,19 +159,12 @@ class ProductService {
     );
 
     if (!product) {
-      return {
-        statusCode: StatusCodes.NOT_FOUND,
-        success: false,
-        message: errorMessages.PRODUCT_NOT_FOUND,
-      };
+      return buildError(StatusCodes.NOT_FOUND, errorMessages.PRODUCT_NOT_FOUND);
     }
 
-    return {
-      statusCode: StatusCodes.OK,
-      success: true,
-      message: successMessages.STOCK_UPDATED,
-      data: { product },
-    };
+    return buildSuccess(StatusCodes.OK, successMessages.STOCK_UPDATED, {
+      product,
+    });
   }
 }
 
