@@ -8,14 +8,14 @@ const startServer = async () => {
     await connectDB();
 
     // Connect to Redis (optional, continues if fails in development)
-    try {
-      await connectRedis();
-    } catch (error) {
-      if (env.NODE_ENV === "production") {
-        throw error;
-      }
-      console.log("Redis connection failed, continuing without Redis");
-    }
+    // try {
+    //   await connectRedis();
+    // } catch (error) {
+    //   if (env.NODE_ENV === "production") {
+    //     throw error;
+    //   }
+    //   console.log("Redis connection failed, continuing without Redis");
+    // }
 
     // Start background jobs
     startAllJobs();

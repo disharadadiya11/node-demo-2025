@@ -21,13 +21,13 @@ router.get("/health", async (req, res) => {
     health.services.database = "down";
   }
 
-  try {
-    const redis = getRedisClient();
-    await redis.ping();
-    health.services.redis = "up";
-  } catch {
-    health.services.redis = "down";
-  }
+  // try {
+  //   const redis = getRedisClient();
+  //   await redis.ping();
+  //   health.services.redis = "up";
+  // } catch {
+  //   health.services.redis = "down";
+  // }
 
   res.status(200).json(health);
 });

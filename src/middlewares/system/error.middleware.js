@@ -2,7 +2,7 @@ const { NODE_ENV } = require("../../config/env");
 const { errorResponse } = require("../../shared/response/apiResponse");
 const { errorMessages } = require("../../shared/constants/messages");
 
-const errorHandler = (err, req, res, next) => {
+module.exports.errorHandler = (err, req, res, next) => {
   let error = { ...err };
   error.message = err.message;
 
@@ -46,5 +46,3 @@ const errorHandler = (err, req, res, next) => {
     NODE_ENV === "development" ? err.stack : undefined
   );
 };
-
-module.exports = errorHandler;

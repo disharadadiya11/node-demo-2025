@@ -1,12 +1,12 @@
-const { mongoose } = require('../../config/database');
+const { mongoose } = require("../../config/database");
 
 const productSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, 'Product name is required'],
+      required: [true, "Product name is required"],
       trim: true,
-      maxlength: [200, 'Product name cannot exceed 200 characters'],
+      maxlength: [200, "Product name cannot exceed 200 characters"],
     },
     slug: {
       type: String,
@@ -16,17 +16,17 @@ const productSchema = new mongoose.Schema(
     },
     description: {
       type: String,
-      required: [true, 'Product description is required'],
+      required: [true, "Product description is required"],
       trim: true,
     },
     price: {
       type: Number,
-      required: [true, 'Product price is required'],
-      min: [0, 'Price cannot be negative'],
+      required: [true, "Product price is required"],
+      min: [0, "Price cannot be negative"],
     },
     compareAtPrice: {
       type: Number,
-      min: [0, 'Compare at price cannot be negative'],
+      min: [0, "Compare at price cannot be negative"],
     },
     sku: {
       type: String,
@@ -36,8 +36,8 @@ const productSchema = new mongoose.Schema(
     },
     stock: {
       type: Number,
-      required: [true, 'Stock quantity is required'],
-      min: [0, 'Stock cannot be negative'],
+      required: [true, "Stock quantity is required"],
+      min: [0, "Stock cannot be negative"],
       default: 0,
     },
     images: [
@@ -47,8 +47,8 @@ const productSchema = new mongoose.Schema(
     ],
     category: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Category',
-      required: [true, 'Category is required'],
+      ref: "Category",
+      required: [true, "Category is required"],
     },
     tags: [
       {
@@ -66,7 +66,7 @@ const productSchema = new mongoose.Schema(
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
     },
   },
   {
@@ -75,30 +75,25 @@ const productSchema = new mongoose.Schema(
 );
 
 // Generate slug before saving
-productSchema.pre('save', function (next) {
-  if (this.isModified('name') && !this.slug) {
+productSchema.pre("save", function (next) {
+  if (this.isModified("name") && !this.slug) {
     this.slug = this.name
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
   }
   next();
 });
 
 // Generate SKU if not provided
-productSchema.pre('save', function (next) {
+productSchema.pre("save", function (next) {
   if (!this.sku) {
-    this.sku = `SKU-${Date.now()}-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
+    this.sku = `SKU-${Date.now()}-${Math.random()
+      .toString(36)
+      .substring(2, 9)
+      .toUpperCase()}`;
   }
   next();
 });
 
-// Indexes
-productSchema.index({ slug: 1 });
-productSchema.index({ category: 1 });
-productSchema.index({ isActive: 1 });
-productSchema.index({ isFeatured: 1 });
-productSchema.index({ price: 1 });
-
-module.exports = mongoose.model('Product', productSchema);
-
+module.exports = mongoose.model("Product", productSchema);

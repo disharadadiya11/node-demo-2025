@@ -1,7 +1,7 @@
 const { startOrderCleanupJob } = require("./order/cleanup.job");
 
 const startAllJobs = () => {
-  startOrderCleanupJob();
+  // startOrderCleanupJob();
 };
 
 module.exports = {

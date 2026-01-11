@@ -30,6 +30,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: Object.values(USER_ROLES),
       default: USER_ROLES.USER,
+      index: true,
     },
     avatar: {
       type: String,
@@ -56,10 +57,6 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
-
-// Indexes
-userSchema.index({ email: 1 });
-userSchema.index({ role: 1 });
 
 // Methods
 userSchema.methods.toJSON = function () {
